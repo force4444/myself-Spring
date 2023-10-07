@@ -3,6 +3,7 @@ package org.springframework.aop;
 import org.aopalliance.intercept.MethodInterceptor;
 
 public class AdvisedSupport {
+
     //是否使用cglib代理
     private boolean proxyTargetClass = false;
     private TargetSource targetSource;
