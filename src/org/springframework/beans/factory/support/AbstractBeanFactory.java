@@ -7,7 +7,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory {
     @Override
     public Object getBean(String name){
-        Object bean = getBeanDefinition(name);
+        Object bean = getSingleton(name);
         if(bean != null){
             return bean;
         }
