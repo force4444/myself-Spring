@@ -10,6 +10,7 @@ import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
+import org.springframework.core.convert.converter.ConversionService;
 import org.springframework.core.io.DefaultResourceLoader;
 
 import java.util.Collection;
@@ -19,6 +20,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
     public static final String APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster";
     private ApplicationEventMulticaster applicationEventMulticaster;
+    public static final String CONVERSION_SERVICE_BEAN_NAME = "conversionService";
 
     @Override
     public void refresh() throws BeansException {
@@ -39,10 +41,23 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         //注册事件监听器
         registerListeners();
 
-        //提前实例化单例bean
-        beanFactory.preInstantiateSingletons();
+        //注册类型转换器和提前实例化单例bean
+        finishBeanFactoryInitialization(beanFactory);
 
         finishRefresh();
+    }
+
+    protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
+        //设置类型转换器
+        if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME)) {
+            Object conversionService = beanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME);
+            if (conversionService instanceof ConversionService) {
+                beanFactory.setConversionService((ConversionService) conversionService);
+            }
+        }
+
+        //提前实例化单例bean
+        beanFactory.preInstantiateSingletons();
     }
 
     protected void initApplicationEventMulticaster() {
@@ -81,6 +96,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         for (BeanPostProcessor beanPostProcessor : beanPostProcessorMap.values()) {
             beanFactory.addBeanPostProcessor(beanPostProcessor);
         }
+    }
+
+    @Override
+    public boolean containsBean(String name) {
+        return getBeanFactory().containsBean(name);
     }
 
     @Override
